@@ -1,31 +1,42 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, getEntryBySlug } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import { Image } from "astro:assets";
 import Layout from "../../layouts/Layout.astro";
 import H1 from "../../components/H1.astro";
 import Main from "../../components/Main.astro";
+// need the prerender line if using ssr, because ssr can't use getStaticPaths
+// export const prerender = true;
 
-export const getStaticPaths = async () => {
-  const posts = await getCollection("posts");
-  const paths = posts.map((post) => {
-    return {
-      params: {
-        slug: post.slug,
-      },
-      props: {
-        post,
-      },
-    };
-  });
-  return paths;
-};
+// export const getStaticPaths = async () => {
+//   const posts = await getCollection("posts");
+//   const paths = posts.map((post) => {
+//     return {
+//       params: {
+//         slug: post.slug,
+//       },
+//       props: {
+//         post,
+//       },
+//     };
+//   });
+//   return paths;
+// };
 
-type Props = {
-  post: CollectionEntry<"posts">;
-};
+// here would be a work-around
+const {slug} = Astro.params;
 
-const { post } = Astro.props;
+// this slug will dynamically pass it into Astro.params, so we can comment out props and post
+// type Props = {
+//   post: CollectionEntry<"posts">;
+// };
+
+// const { post } = Astro.props;
+const post = await getEntryBySlug("posts", slug as string);
+// this shows an error at post, so
+if (!post) {
+  return Astro.redirect("/404");
+}
 const { Content } = await post.render();
 ---
 
